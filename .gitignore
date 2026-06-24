@@ -1,0 +1,6 @@
+.claude
+.idea
+web/whoismafia/.env
+web/whoismafia/vendor/
+web/whoismafia/node_modules/
+web/whoismafia/public/build/
