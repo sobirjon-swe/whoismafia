@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import api from '../lib/api';
@@ -8,7 +8,6 @@ const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME;
 
 function TelegramButton({ onSuccess, onError }) {
     const containerRef = useRef(null);
-    const [botError, setBotError] = useState(false);
 
     useEffect(() => {
         if (!BOT_USERNAME || !containerRef.current) return;
@@ -30,36 +29,17 @@ function TelegramButton({ onSuccess, onError }) {
         script.setAttribute('data-request-access', 'write');
         script.setAttribute('data-radius', '2');
         script.async = true;
-        script.onerror = () => setBotError(true);
 
         containerRef.current.innerHTML = '';
         containerRef.current.appendChild(script);
 
-        // "Bot domain invalid" ni aniqlash uchun kuzatish
-        const timer = setTimeout(() => {
-            const el = containerRef.current;
-            if (el && el.textContent.includes('invalid')) setBotError(true);
-        }, 2500);
-
-        return () => {
-            clearTimeout(timer);
-            delete window.onTelegramAuth;
-        };
+        return () => { delete window.onTelegramAuth; };
     }, []);
 
     if (!BOT_USERNAME) {
         return (
             <div style={warningBoxStyle}>
-                ⚠ VITE_TELEGRAM_BOT_USERNAME .env ga qo'shilmagan
-            </div>
-        );
-    }
-
-    if (botError) {
-        return (
-            <div style={warningBoxStyle}>
-                ⚠ Telegram login localhost da ishlamaydi — bot domeni sozlanmagan.
-                Admin kirish orqali kiring.
+                ⚠ VITE_TELEGRAM_BOT_USERNAME sozlanmagan
             </div>
         );
     }
@@ -77,42 +57,21 @@ export default function Login() {
     const { theme, toggle } = useTheme();
     const { login } = useAuth();
 
-    // 'main' | 'guest' | 'admin'
-    const [view, setView] = useState('main');
-    const [guestName, setGuestName] = useState('');
+    const [view, setView] = useState('telegram');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-
-    const resetError = () => setError('');
 
     const handleTelegramSuccess = (token, userData) => {
         login(token, userData);
         navigate('/dashboard');
     };
 
-    const handleGuest = async (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        if (!guestName.trim()) return;
         setLoading(true);
-        resetError();
-        try {
-            const res = await api.post('/auth/guest', { name: guestName });
-            login(res.data.token, res.data.user);
-            navigate('/dashboard');
-        } catch {
-            setError('Xatolik yuz berdi. Qayta urinib ko\'ring.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleAdminLogin = async (e) => {
-        e.preventDefault();
-        if (!email || !password) return;
-        setLoading(true);
-        resetError();
+        setError('');
         try {
             const res = await api.post('/auth/login', { email, password });
             login(res.data.token, res.data.user);
@@ -125,21 +84,12 @@ export default function Login() {
     };
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: `radial-gradient(ellipse 100% 55% at 50% 108%, rgba(110,0,0,0.16) 0%, transparent 55%),
-                         radial-gradient(ellipse 70% 38% at 50% -4%, rgba(40,0,0,0.55) 0%, transparent 55%)`,
-        }}>
+        <div style={pageStyle}>
             <button className="theme-toggle" onClick={toggle} style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 100 }}>
                 {theme === 'dark' ? '☀ LIGHT' : '🌙 DARK'}
             </button>
 
-            <div className="card card-red-top fade-in" style={{ maxWidth: '408px', width: '100%', padding: '48px 44px', backdropFilter: 'blur(20px)' }}>
-
-                {/* Logo */}
+            <div className="card card-red-top fade-in" style={cardStyle}>
                 <div style={{ textAlign: 'center', marginBottom: '28px' }}>
                     <p className="font-cinzel" style={{ fontSize: '10px', letterSpacing: '0.58em', color: 'var(--color-text-4)', marginBottom: '6px' }}>
                         WHO IS
@@ -151,16 +101,14 @@ export default function Login() {
 
                 <div style={dividerStyle} />
 
-                {/* TAB HEADER */}
                 <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', background: 'rgba(255,255,255,0.04)', borderRadius: '3px', padding: '4px' }}>
                     {[
-                        { key: 'main',  label: 'Telegram' },
-                        { key: 'guest', label: 'Mehmon'   },
-                        { key: 'admin', label: '⚙ Admin'  },
+                        { key: 'telegram', label: 'Telegram' },
+                        { key: 'email',    label: 'Email'    },
                     ].map(tab => (
                         <button
                             key={tab.key}
-                            onClick={() => { setView(tab.key); resetError(); }}
+                            onClick={() => { setView(tab.key); setError(''); }}
                             style={{
                                 flex: 1,
                                 padding: '8px',
@@ -182,46 +130,15 @@ export default function Login() {
                     ))}
                 </div>
 
-                {/* TELEGRAM */}
-                {view === 'main' && (
+                {view === 'telegram' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <TelegramButton onSuccess={handleTelegramSuccess} onError={setError} />
                         {error && <p style={errorStyle}>{error}</p>}
                     </div>
                 )}
 
-                {/* MEHMON */}
-                {view === 'guest' && (
-                    <form onSubmit={handleGuest} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <p style={{ fontSize: '13px', color: 'var(--color-text-3)', textAlign: 'center' }}>
-                            Ismingizni kiriting
-                        </p>
-                        <input
-                            type="text"
-                            placeholder="Masalan: Ali"
-                            value={guestName}
-                            onChange={e => setGuestName(e.target.value)}
-                            required
-                            autoFocus
-                            style={inputStyle}
-                        />
-                        {error && <p style={errorStyle}>{error}</p>}
-                        <button className="btn-primary" type="submit" disabled={loading || !guestName.trim()} style={{ width: '100%', padding: '14px' }}>
-                            {loading ? 'KIRISH...' : 'DAVOM ETISH →'}
-                        </button>
-                    </form>
-                )}
-
-                {/* ADMIN */}
-                {view === 'admin' && (
-                    <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                            <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
-                            <span style={{ fontSize: '11px', color: 'var(--color-red-bright)', letterSpacing: '0.1em', fontFamily: 'Cinzel, serif' }}>
-                                ADMIN PANEL
-                            </span>
-                            <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
-                        </div>
+                {view === 'email' && (
+                    <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <input
                             type="email"
                             placeholder="Email"
@@ -246,7 +163,13 @@ export default function Login() {
                     </form>
                 )}
 
-                <div style={{ marginTop: '24px', textAlign: 'center' }}>
+                <div style={{ marginTop: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--color-text-4)' }}>
+                        Hisobingiz yo'qmi?{' '}
+                        <Link to="/register" style={{ color: 'var(--color-red-bright)', textDecoration: 'none' }}>
+                            Ro'yxatdan o'ting
+                        </Link>
+                    </span>
                     <button onClick={() => navigate('/')} style={backBtnStyle}>
                         ← Bosh sahifaga
                     </button>
@@ -255,6 +178,23 @@ export default function Login() {
         </div>
     );
 }
+
+const pageStyle = {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px',
+    background: `radial-gradient(ellipse 100% 55% at 50% 108%, rgba(110,0,0,0.16) 0%, transparent 55%),
+                 radial-gradient(ellipse 70% 38% at 50% -4%, rgba(40,0,0,0.55) 0%, transparent 55%)`,
+};
+
+const cardStyle = {
+    maxWidth: '408px',
+    width: '100%',
+    padding: '48px 44px',
+    backdropFilter: 'blur(20px)',
+};
 
 const inputStyle = {
     width: '100%',
@@ -266,15 +206,7 @@ const inputStyle = {
     fontSize: '14px',
     fontFamily: 'Space Grotesk, sans-serif',
     outline: 'none',
-};
-
-const backBtnStyle = {
-    background: 'none',
-    border: 'none',
-    color: 'var(--color-text-4)',
-    fontSize: '12px',
-    cursor: 'pointer',
-    fontFamily: 'Space Grotesk, sans-serif',
+    boxSizing: 'border-box',
 };
 
 const errorStyle = {
@@ -289,6 +221,15 @@ const dividerStyle = {
     marginBottom: '24px',
 };
 
+const backBtnStyle = {
+    background: 'none',
+    border: 'none',
+    color: 'var(--color-text-4)',
+    fontSize: '12px',
+    cursor: 'pointer',
+    fontFamily: 'Space Grotesk, sans-serif',
+};
+
 const warningBoxStyle = {
     padding: '12px 16px',
     background: 'rgba(255,100,0,0.08)',
@@ -297,5 +238,4 @@ const warningBoxStyle = {
     fontSize: '12px',
     color: '#FF8A65',
     textAlign: 'center',
-    lineHeight: 1.6,
 };

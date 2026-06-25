@@ -120,10 +120,10 @@ export default function Lobby() {
                 </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '20px', padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+            <div className="lobby-layout" style={{ display: 'flex', gap: '20px', padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
                 {/* Player grid */}
                 <div style={{ flex: 1 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                    <div className="player-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
                         {Array.from({ length: room?.player_count || 8 }).map((_, i) => {
                             const p = room?.players?.[i];
                             const isMe = p?.user_id === user?.id;
@@ -158,7 +158,7 @@ export default function Lobby() {
                 </div>
 
                 {/* Right panel */}
-                <div style={{ width: '260px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div className="lobby-sidebar" style={{ width: '260px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div className="card" style={{ padding: '20px' }}>
                         <p className="font-cinzel" style={{ fontSize: '12px', letterSpacing: '0.1em', color: 'var(--color-text-4)', marginBottom: '12px' }}>SOZLAMALAR</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

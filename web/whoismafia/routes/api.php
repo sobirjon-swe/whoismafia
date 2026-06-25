@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 // Auth (public) — rate limited
 Route::middleware('throttle:auth')->group(function () {
     Route::post('/auth/login',    [AuthController::class, 'login']);
+    Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/telegram', [AuthController::class, 'telegram']);
 });
 

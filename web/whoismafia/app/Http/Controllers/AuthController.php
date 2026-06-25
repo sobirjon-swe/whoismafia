@@ -62,6 +62,29 @@ class AuthController extends Controller
         ]);
     }
 
+    public function register(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name'     => 'required|string|max:50',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $base     = strtolower(preg_replace('/\s+/', '_', trim($data['name'])));
+        $username = $base . '_' . substr(uniqid(), -5);
+
+        $user  = User::create([
+            'name'     => $data['name'],
+            'username' => $username,
+            'email'    => $data['email'],
+            'password' => $data['password'],
+        ]);
+
+        $token = $user->createToken('app')->plainTextToken;
+
+        return response()->json(['token' => $token, 'user' => $user], 201);
+    }
+
     public function guest(Request $request): JsonResponse
     {
         $request->validate(['name' => 'nullable|string|max:50']);

@@ -243,3 +243,56 @@ body::before {
 
 .phase-day   { background: rgba(255,185,0,0.07); border: 1px solid rgba(255,185,0,0.17); color: #BBA000; }
 .phase-night { background: rgba(40,60,200,0.10);  border: 1px solid rgba(80,120,255,0.2);  color: #6080FF; }
+
+/* ── Mobile responsive ── */
+@media (max-width: 480px) {
+    .nav { padding: 0 16px; }
+
+    .btn-primary  { padding: 16px 32px; font-size: 12px; letter-spacing: 0.14em; }
+    .btn-secondary { padding: 12px 20px; font-size: 12px; }
+
+    /* Login / Register cards */
+    .card-red-top.fade-in {
+        padding: 36px 24px !important;
+    }
+
+    /* Player grid — 2 columns on mobile */
+    .player-grid-mobile {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* Lobby layout — stack vertically */
+    .lobby-layout {
+        flex-direction: column !important;
+    }
+
+    .lobby-sidebar {
+        width: 100% !important;
+    }
+
+    /* Game layout */
+    .game-layout {
+        flex-direction: column !important;
+        padding: 12px !important;
+    }
+
+    .game-sidebar {
+        width: 100% !important;
+        order: -1;
+    }
+
+    /* Avatar smaller on mobile */
+    .avatar {
+        width: 42px;
+        height: 42px;
+        font-size: 13px;
+    }
+
+    /* Input tap target */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        font-size: 16px !important; /* prevents iOS zoom */
+        padding: 14px 16px !important;
+    }
+}
