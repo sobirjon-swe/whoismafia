@@ -33,12 +33,30 @@ export default function Lobby() {
     }, [code]);
 
     useEffect(() => {
+        const interval = setInterval(() => {
+            api.get(`/rooms/${code}`).then(r => {
+                if (r.data.status === 'playing') {
+                    navigate(`/game/${code}`);
+                } else {
+                    setRoom(r.data);
+                }
+            }).catch(() => {});
+        }, 2000);
+        return () => clearInterval(interval);
+    }, [code]);
+
+    useEffect(() => {
         if (!room) return;
 
         const channel = echo.channel(`rooms.${code}`);
 
         channel.listen('PlayerJoined', ({ player }) => {
-            setRoom(r => ({ ...r, players: [...(r.players || []), player] }));
+            setRoom(r => ({
+                ...r,
+                players: r.players.some(p => p.user_id === player.user_id)
+                    ? r.players
+                    : [...r.players, player],
+            }));
         });
 
         channel.listen('PlayerReady', ({ user_id, is_ready }) => {

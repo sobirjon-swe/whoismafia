@@ -118,7 +118,7 @@ class GameController extends Controller
                 return;
             }
 
-            broadcast(new PlayerVoted($room, $request->user()->id, $data['target_id']))->toOthers();
+            broadcast(new PlayerVoted($room, $request->user()->id, $data['target_id']));
 
             $aliveCount = $room->alivePlayers()->count();
             $voteCount  = Vote::where('room_id', $room->id)->where('day_count', $room->day_count)->count();

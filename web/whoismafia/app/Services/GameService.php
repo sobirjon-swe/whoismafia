@@ -41,7 +41,7 @@ class GameService
             ]);
         });
 
-        broadcast(new GameStarting($room))->toOthers();
+        broadcast(new GameStarting($room));
     }
 
     // Ovoz berish tugaganda: ayblanuvchini aniqlash va defense fazasiga o'tish

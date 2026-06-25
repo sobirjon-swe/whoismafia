@@ -79,7 +79,7 @@ class RoomController extends Controller
             'is_spectator' => $isSpectator,
         ]);
 
-        broadcast(new PlayerJoined($room, $player->load('user')))->toOthers();
+        broadcast(new PlayerJoined($room, $player->load('user')));
 
         return response()->json($this->roomWithPlayers($room, $request->user()->id));
     }
@@ -93,7 +93,7 @@ class RoomController extends Controller
 
         $player->update(['is_ready' => !$player->is_ready]);
 
-        broadcast(new PlayerReady($room, $player->load('user')))->toOthers();
+        broadcast(new PlayerReady($room, $player->load('user')));
 
         return response()->json(['is_ready' => $player->is_ready]);
     }

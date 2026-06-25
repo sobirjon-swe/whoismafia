@@ -84,9 +84,9 @@ class ChatController extends Controller
 
         // Tundagi mafia xabarlari faqat mafia kanaliga broadcast qilinadi
         if ($message->phase === 'night') {
-            broadcast(new MessageSent($room, $payload, 'mafia'))->toOthers();
+            broadcast(new MessageSent($room, $payload, 'mafia'));
         } else {
-            broadcast(new MessageSent($room, $payload))->toOthers();
+            broadcast(new MessageSent($room, $payload));
         }
 
         return response()->json($payload, 201);

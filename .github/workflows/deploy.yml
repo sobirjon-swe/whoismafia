@@ -1,0 +1,71 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo, pdo_pgsql, mbstring, xml, curl
+
+      - name: Install Composer dependencies
+        working-directory: web/whoismafia
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: web/whoismafia/package-lock.json
+
+      - name: Install NPM dependencies and build
+        working-directory: web/whoismafia
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /var/www/whoismafia
+
+            # Pull latest code
+            git pull origin main
+
+            cd web/whoismafia
+
+            # Install PHP dependencies
+            composer install --no-dev --optimize-autoloader --no-interaction
+
+            # Install Node & build
+            npm ci
+            npm run build
+
+            # Run migrations
+            php artisan migrate --force
+
+            # Clear and cache config
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan event:cache
+
+            # Restart services
+            supervisorctl restart reverb
+            supervisorctl restart queue-worker
+            php-fpm8.3 -t && systemctl reload php8.3-fpm
