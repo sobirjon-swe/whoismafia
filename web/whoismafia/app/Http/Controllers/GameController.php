@@ -167,6 +167,9 @@ class GameController extends Controller
             } elseif ($room->current_phase === 'defense') {
                 // Defense tugadi — endi ayblanuvchini chiqaramiz
                 $this->gameService->executeDefenseResult($room);
+            } elseif ($room->current_phase === 'night') {
+                // Taymer tugadi — qolgan night actionlarni qayta ishlash (qisman ham bo'lsa)
+                $this->gameService->processNightActions($room);
             } else {
                 $this->gameService->nextPhase($room, $allowedTransitions[$room->current_phase]);
             }

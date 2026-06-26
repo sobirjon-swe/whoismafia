@@ -133,7 +133,7 @@ class GameService
         }
     }
 
-    private function processNightActions(Room $room): void
+    public function processNightActions(Room $room): void
     {
         $actions = NightAction::where('room_id', $room->id)
             ->where('day_count', $room->day_count)

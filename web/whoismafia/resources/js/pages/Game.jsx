@@ -40,15 +40,15 @@ function Timer({ endsAt, onExpire }) {
     );
 }
 
-function NightPanel({ phase, myRole, players, roomCode, onSubmit }) {
-    const [selected, setSelected] = useState(null);
+function NightPanel({ phase, myRole, players, roomCode, selected, onClearSelect, onSubmit }) {
     const [submitted, setSubmitted] = useState(false);
     const [result, setResult] = useState(null);
+    const submittedPlayerRef = useRef(null);
 
     useEffect(() => {
-        setSelected(null);
         setSubmitted(false);
         setResult(null);
+        submittedPlayerRef.current = null;
     }, [phase]);
 
     if (phase !== 'night') return null;
@@ -75,6 +75,7 @@ function NightPanel({ phase, myRole, players, roomCode, onSubmit }) {
                 action_type: actionType,
                 target_id: selected,
             });
+            submittedPlayerRef.current = players.find(p => p.user_id === selected) ?? null;
             setSubmitted(true);
             if (myRole === 'detective') setResult(res.data.is_mafia);
             onSubmit?.();
@@ -84,20 +85,21 @@ function NightPanel({ phase, myRole, players, roomCode, onSubmit }) {
     const selPlayer = players.find(p => p.user_id === selected);
 
     if (submitted) {
+        const donePlayer = submittedPlayerRef.current;
         return (
             <div style={{ textAlign: 'center' }}>
                 <p style={{ fontSize: '28px', marginBottom: '8px' }}>✓</p>
                 <p style={{ fontSize: '13px', color: actionColor[myRole], fontWeight: 600, marginBottom: '6px' }}>
                     {actionLabel[myRole]} amalga oshirildi
                 </p>
-                {myRole === 'detective' && selPlayer && result !== null && (
+                {myRole === 'detective' && donePlayer && result !== null && (
                     <div style={{
                         marginTop: '12px', padding: '12px 16px',
                         background: result ? 'rgba(196,30,58,0.1)' : 'rgba(76,175,80,0.1)',
                         border: `1px solid ${result ? 'rgba(196,30,58,0.3)' : 'rgba(76,175,80,0.3)'}`,
                         borderRadius: '2px',
                     }}>
-                        <p style={{ fontSize: '12px', color: 'var(--color-text-3)', marginBottom: '4px' }}>{selPlayer.name}</p>
+                        <p style={{ fontSize: '12px', color: 'var(--color-text-3)', marginBottom: '4px' }}>{donePlayer.name}</p>
                         <p style={{ fontSize: '14px', fontWeight: 700, color: result ? '#EF5350' : '#81C784' }}>
                             {result ? '🔪 MAFIA!' : '✓ Tinch fuqaro'}
                         </p>
@@ -125,7 +127,7 @@ function NightPanel({ phase, myRole, players, roomCode, onSubmit }) {
                     }}>
                         ✓ {actionLabel[myRole].toUpperCase()}
                     </button>
-                    <button onClick={() => setSelected(null)} style={{ marginTop: '6px', background: 'none', border: 'none', color: 'var(--color-text-4)', fontSize: '11px', cursor: 'pointer', fontFamily: 'Space Grotesk, sans-serif' }}>
+                    <button onClick={onClearSelect} style={{ marginTop: '6px', background: 'none', border: 'none', color: 'var(--color-text-4)', fontSize: '11px', cursor: 'pointer', fontFamily: 'Space Grotesk, sans-serif' }}>
                         Bekor qilish
                     </button>
                 </div>
@@ -477,7 +479,9 @@ export default function Game() {
                             myRole={my_role}
                             players={players}
                             roomCode={code}
-                            onSubmit={() => setNightActionSubmitted(true)}
+                            selected={selectedPlayer}
+                            onClearSelect={() => setSelectedPlayer(null)}
+                            onSubmit={() => { setNightActionSubmitted(true); setSelectedPlayer(null); }}
                         />
                     ) : phase !== 'voting' ? (
                         <div style={{ textAlign: 'center' }}>
