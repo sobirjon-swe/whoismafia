@@ -68,4 +68,4 @@ jobs:
             # Restart services
             supervisorctl restart reverb
             supervisorctl restart queue-worker
-            php-fpm8.3 -t && systemctl reload php8.3-fpm
+            php-fpm8.4 -t && systemctl reload php8.4-fpm
