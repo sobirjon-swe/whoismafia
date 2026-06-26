@@ -16,7 +16,7 @@ function Timer({ endsAt, onExpire }) {
         firedRef.current = false;
         if (!endsAt) return;
         const update = () => {
-            const diff = Math.max(0, Math.floor((new Date(endsAt) - Date.now()) / 1000));
+            const diff = Math.max(0, Math.floor((new Date(endsAt * 1000) - Date.now()) / 1000));
             setSeconds(diff);
             if (diff === 0 && !firedRef.current) {
                 firedRef.current = true;

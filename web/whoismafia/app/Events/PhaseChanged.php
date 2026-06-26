@@ -29,7 +29,7 @@ class PhaseChanged implements ShouldBroadcastNow
         return [
             'phase'           => $this->room->current_phase,
             'day_count'       => $this->room->day_count,
-            'phase_ends_at'   => $this->room->phase_ends_at?->toIso8601String(),
+            'phase_ends_at'   => $this->room->phase_ends_at?->utc()->timestamp,
             'accused_user_id' => $this->accusedUserId,
             'is_tie'          => $this->isTie,
         ];

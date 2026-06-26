@@ -160,7 +160,7 @@ class RoomController extends Controller
             'spectator_allowed' => $room->spectator_allowed,
             'day_count'         => $room->day_count,
             'current_phase'     => $room->current_phase,
-            'phase_ends_at'     => $room->phase_ends_at?->toIso8601String(),
+            'phase_ends_at'     => $room->phase_ends_at?->utc()->timestamp,
             'players'           => $room->players->map(fn($p) => [
                 'id'           => $p->id,
                 'user_id'      => $p->user_id,

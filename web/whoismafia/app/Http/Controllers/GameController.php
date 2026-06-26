@@ -46,7 +46,7 @@ class GameController extends Controller
                 'status'        => $room->status,
                 'day_count'     => $room->day_count,
                 'current_phase' => $room->current_phase,
-                'phase_ends_at' => $room->phase_ends_at?->toIso8601String(),
+                'phase_ends_at' => $room->phase_ends_at?->utc()->timestamp,
                 'talk_time'     => $room->talk_time,
                 'vote_time'     => $room->vote_time,
                 'defense_time'  => $room->defense_time,
